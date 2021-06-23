@@ -1,7 +1,7 @@
 /*
 
 source ip.bashrc
-gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c
+gcc -std=gnu11 -Wall -Wextra -DIP=\"$IP\" -DPORT=$PORT -o erinnern.out erinnern.c
 
 */
 
@@ -15,8 +15,6 @@ gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c
 // #include <netinet/ip.h> /* superset of previous */
 
 #include <arpa/inet.h> // inet_aton()
-
-#include "./secret.h"
 
 #define SZ 1024
 

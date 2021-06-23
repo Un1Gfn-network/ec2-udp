@@ -16,28 +16,20 @@ rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/
 SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/1615110#comment2539331_1615110))
 
     source ip.bashrc
-    pacman -Qo nc | grep -q openbsd \
-      && env TERM=xterm-256color \
-           ssh \
-             -i ~/.ssh/id_rsa \
-             -l ubuntu \
-             -o PasswordAuthentication=no \
-             -o PreferredAuthentications=publickey \
-             -o "ProxyCommand=nc -X 5 -x 127.0.0.1:1080 %h %p" \
-             -p 22 \
-             "$IP"
+    ssh
 
 nc server
 
-    dpkg-query -S /bin/nc.openbsd
-    nc.openbsd -4 -l -n -u -v 0.0.0.0 8224
+    source ip.bashrc
+    ssh dpkg-query -S /bin/nc.openbsd
+    ssh nc.openbsd -4 -l -n -u -v 0.0.0.0 $PORT
 
 <details><summary>nc client</summary>
 
     source ip.bashrc
     pacman -Qo /usr/bin/nc
-    nc -4 -N -n -u -v "$IP" 8224
-    nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" 8224 # nc: no proxy support for UDP mode
+    nc -4 -N -n -u -v "$IP" $PORT
+    # nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" $PORT # nc: no proxy support for UDP mode
 
 </details>
 
