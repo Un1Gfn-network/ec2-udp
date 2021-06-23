@@ -1,31 +1,53 @@
-## [ec2-udp](https://github.com/Un1Gfn-network/ec2-udp)
+## [erinnern](https://github.com/Un1Gfn-network/erinnern)
 
-https://console.aws.amazon.com/ec2
+random [repo name](https://www.bestrandoms.com/random-german-words)
 
-```bash
-# https://superuser.com/a/576558
-# openssl-rsautl(1ssl)
-echo "<IP_ADDRESS>" \
-  | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
-  | base64 -w0
-```
+rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/html/rfc1928#section-7)
 
-https://superuser.com/q/1615110
+[EC2](https://console.aws.amazon.com/ec2) Management Console
 
-```bash
-pacman -Qo nc | grep -q openbsd \
-  && env TERM=xterm-256color \
-       ssh \
-         -i ~/.ssh/id_rsa \
-         -l ubuntu \
-         -o PasswordAuthentication=no \
-         -o PreferredAuthentications=publickey \
-         -o "ProxyCommand=nc -X 5 -x 127.0.0.1:1080 %h %p" \
-         -p 22 \
-         "$(base64 -d <<<"VRWpWW62O933SkC2phvilOoTPnQFceTTsvfB6kacnJc41RyQ7C1PKgGv8wk6R7xzWfnc94KbXF/lCe8lBcHVEFMuI/YimS/OKF3ZZy8tXz/k2r9Mt2vP95tnqeEho/vDnP/uQq35Ipv3w1mg6/mkXeyp/K22n0Bkq9ikMak4H5LjPuQyv4vYKib6XIuzTgS2SXGhn6v0J49SDg7yzt2G3C7Vr6IJhNPAputwVCkDDpEJCBjqHeIX6Sp6VoW8oyu5ZB7SXMpUjypDGSpy/XVY1wtqVaywjqUrqiAX9f6X0btEMRAC7PZqhj7HYOAonrwE800ZNo7FgFKiOrdyIcH8wA==" \
-              | openssl rsautl -inkey ~/.ssh/id_rsa -decrypt)"
-```
+[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
 
-https://github.com/Un1Gfn-network/cm-mailman/blob/master/main.c (tcp http srv) \
-https://github.com/Un1Gfn-network/cm-exp02/blob/master/server.c (udp srv) \
-https://github.com/Un1Gfn-nt/ntexec/blob/master/win_server.c (udp srv)
+    # openssl-rsautl(1ssl)
+    echo "<IP_ADDRESS>" \
+      | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
+      | base64 -w0
+
+SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/1615110#comment2539331_1615110))
+
+    source ip.bashrc
+    pacman -Qo nc | grep -q openbsd \
+      && env TERM=xterm-256color \
+           ssh \
+             -i ~/.ssh/id_rsa \
+             -l ubuntu \
+             -o PasswordAuthentication=no \
+             -o PreferredAuthentications=publickey \
+             -o "ProxyCommand=nc -X 5 -x 127.0.0.1:1080 %h %p" \
+             -p 22 \
+             "$IP"
+
+nc server
+
+    dpkg-query -S /bin/nc.openbsd
+    nc.openbsd -4 -l -n -u -v 0.0.0.0 8224
+
+<details><summary>nc client</summary>
+
+    source ip.bashrc
+    pacman -Qo /usr/bin/nc
+    nc -4 -N -n -u -v "$IP" 8224
+    nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" 8224 # nc: no proxy support for UDP mode
+
+</details>
+
+|protocol|type|example|
+|-|-|-|
+|http|server_unix|[heroku](https://github.com/Un1Gfn-network/cm-mailman/blob/master/main.c)|
+| udp|server_unix|[cm](https://github.com/Un1Gfn-network/cm-exp02/blob/master/server.c)|
+| udp|**client_unix**|[cm](https://github.com/Un1Gfn-network/cm-exp02/blob/master/client.c)|
+| udp|client_win |[cm](https://github.com/Un1Gfn-network/cm-exp02/blob/master/client_win.c)|
+| udp|server_win |[ntexec](https://github.com/Un1Gfn-nt/ntexec/blob/master/win_server.c)|
+| udp|**client_unix**|[ntexec](https://github.com/Un1Gfn-nt/ntexec/blob/master/ntexec.c)|
+
+<!-- ||||| -->
