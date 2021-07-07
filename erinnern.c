@@ -1,39 +1,25 @@
-/*
-
-source ip.bashrc
-gcc -std=gnu11 -Wall -Wextra -DIP=\"$IP\" -DPORT=$PORT -o erinnern.out erinnern.c
-
-*/
-
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 // ip(7)
-#include <netinet/in.h>
-// #include <netinet/ip.h> /* superset of previous */
+// #include <netinet/ip.h>
+#include <netinet/in.h> // subset of <netinet/ip.h>
 
 #include <arpa/inet.h> // inet_aton()
 
-#define SZ 1024
+#include "./secret.h"
+#include "./sock.h"
 
-static int sockfd=-1;
+static struct sockaddr_in local_server_addr={};
 
-struct sockaddr_in local_server_addr={};
+static char sendbuf[SZ]={};
+static size_t sendbuflen=0;
 
-static unsigned char buf[SZ]={};
-static size_t buflen=0;
-
-static void socket2(){
-  static_assert(IPPROTO_UDP==17);
-  sockfd=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP/*ip(7)*/);
-  // sockfd=socket(AF_INET,SOCK_DGRAM,0/*ip(7)*/);
-  assert(sockfd>=3);
-}
-
-// local_server_addr <- 127.0.0.1:1080
-void lsa(){
+// udp.dstport <- local_server_addr <- 127.0.0.1:1080
+static void lsa(){
   local_server_addr=(struct sockaddr_in){
     .sin_family=AF_INET,
     .sin_port=htons(1080),
@@ -43,40 +29,35 @@ void lsa(){
   assert(local_server_addr.sin_addr.s_addr==htonl(INADDR_LOOPBACK)/*ip(7)*/);
 }
 
-static void buf_clear(){
-  bzero(buf,SZ);
-  buflen=0;
-}
+static void buf_wrap(const char *const message){
 
-static void buf_wrap(const char *message){
-
-  assert(buflen==0);
+  assert(sendbuflen==0);
   for(int i=0;i<SZ;++i)
-    assert(buf[i]=='\0');
+    assert(sendbuf[i]=='\0');
 
-  #define i buflen
+  #define i sendbuflen
 
   // RSV
   assert(i==0);
-  buf[i]=0x00;
-  buf[i+1]=0x00;
+  sendbuf[i]=0x00;
+  sendbuf[i+1]=0x00;
   i+=2;
 
   // FRAG
   // X'00' ... standalone
   assert(i==2);
-  buf[i]=0x00;
+  sendbuf[i]=0x00;
   i+=1;
 
   // ATYP
   assert(i==3);
-  buf[i]=0x01;
+  sendbuf[i]=0x01;
   i+=1;
 
   // DST.ADDR
   // ATYP ... X'01' ... version-4 IP ... length of 4 octets (4 8-bit) (4 bytes) (32bit)
   assert(i==4);
-  assert(1==inet_aton(IP,(struct in_addr*)&(buf[i])));
+  assert(1==inet_aton(IP,(struct in_addr*)&(sendbuf[i])));
   static_assert(sizeof(struct in_addr)==4);
   static_assert(sizeof(in_addr_t)==4);
   static_assert(sizeof(uint32_t)==4);
@@ -85,13 +66,13 @@ static void buf_wrap(const char *message){
   // DST.PORT
   // uint16_t htons(uint16_t hostshort);
   assert(i==8);
-  *((uint16_t*)(&(buf[i])))=htons(PORT);
+  *((uint16_t*)(&(sendbuf[i])))=htons(UDPORT);
   static_assert(sizeof(uint16_t)==2);
   i+=2;
 
   // DATA
   assert(i==10);
-  strcpy((char*)(&(buf[i])),message);
+  strcpy((char*)(&(sendbuf[i])),message);
 
   i+=strlen(message);
 
@@ -99,27 +80,44 @@ static void buf_wrap(const char *message){
 
 }
 
-static void sendto2(){
-  assert((long long)buflen==(long long)sendto(
+// Similar to sendto_direct() in udp_server.c
+static void sendto_socks5(const char *const message){  
+  bzero(sendbuf,SZ);
+  sendbuflen=0;
+  buf_wrap(message);
+  assert((long long)sendbuflen==(long long)sendto(
     sockfd,
-    buf,
-    buflen,
+    sendbuf,
+    sendbuflen,
     MSG_CONFIRM,
     (const struct sockaddr*)(&local_server_addr),
     sizeof(local_server_addr)
   ));
+  printf("sent: %s\n",message);
 }
 
 int main(){
 
-  buf_clear();
-  buf_wrap("apple tree\n");
-
-  socket2();
-
+  // 0 is ephemeral
+  // https://stackoverflow.com/q/1075399#comment12066805_1077305
+  bind2(0);
   lsa();
 
-  sendto2();
+  // Alpha
+  // printf "..." | hexdump
+  // sendto_direct("\xce\xb1");
+  sendto_socks5("\xce\xb1");
+
+  // Beta
+  // struct sockaddr_in unk={};
+  // recvfrom2(&unk);
+  // printf("from %s:%u\n",inet_ntoa(unk.sin_addr),ntohs(unk.sin_port));
+
+  // Gamma
+  // sendto_socks5("\xce\xb3");
+
+  // Delta (fail)
+  // recvfrom2();
 
   close(sockfd);
 

@@ -4,34 +4,61 @@ random [repo name](https://www.bestrandoms.com/random-german-words)
 
 rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/html/rfc1928#section-7)
 
+[SOCKS](https://en.wikipedia.org/wiki/SOCKS) on Wikipedia
+
 [EC2](https://console.aws.amazon.com/ec2) Management Console
-
-[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
-
-    # openssl-rsautl(1ssl)
-    echo "<IP_ADDRESS>" \
-      | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
-      | base64 -w0
 
 SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/1615110#comment2539331_1615110))
 
-    source ip.bashrc
+    source ~/erinnern/secret.bashrc
     ssh
 
-nc server
+<details><summary>UDP server nc</summary>
 
-    source ip.bashrc
-    ssh dpkg-query -S /bin/nc.openbsd
-    ssh nc.openbsd -4 -l -n -u -v 0.0.0.0 $PORT
-
-<details><summary>nc client</summary>
-
-    source ip.bashrc
-    pacman -Qo /usr/bin/nc
-    nc -4 -N -n -u -v "$IP" $PORT
-    # nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" $PORT # nc: no proxy support for UDP mode
+    source ~/erinnern/secret.bashrc
+    ssh
+<!--  -->
+    tmux attach || tmux
+<!--  -->
+    dpkg-query -S /bin/nc.openbsd
+    nc.openbsd -4 -l -n -u -v 0.0.0.0 $LC_UDPORT
 
 </details>
+
+UDP server udp_server.out
+
+    cd ~/erinnern
+    source secret.bashrc
+    ssh rm -fv udp_server.c sock.c sock.h secret.h
+    scp udp_server.c sock.c sock.h secret.h
+    ssh
+<!-- -->
+    tmux attach || tmux
+<!-- -->
+    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c sock.c && ./udp_server.out
+
+UDP client erinnern
+
+    gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c sock.c && ./erinnern.out
+
+<details><summary>UDP client nc</summary>
+
+    source ~/erinnern/secret.bashrc
+    pacman -Qo /usr/bin/nc
+    nc -4 -N -n -u -v "$IP" $UDPORT
+    # nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" $UDPORT # nc: no proxy support for UDP mode
+
+</details>
+
+TCP server nc
+
+    source ~/erinnern/secret.bashrc
+    ssh dpkg-query -S /bin/nc.openbsd
+    ssh nc.openbsd -4 -l -n -u -v 0.0.0.0 $TCPORT
+
+TCP client ??
+
+    ?
 
 |protocol|type|example|
 |-|-|-|
@@ -43,3 +70,14 @@ nc server
 | udp|**client_unix**|[ntexec](https://github.com/Un1Gfn-nt/ntexec/blob/master/ntexec.c)|
 
 <!-- ||||| -->
+
+<details><summary>&nbsp;</summary>
+
+[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
+
+    # openssl-rsautl(1ssl)
+    echo "<IP_ADDRESS>" \
+      | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
+      | base64 -w0
+
+</details>
