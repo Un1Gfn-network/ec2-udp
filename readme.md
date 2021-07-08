@@ -29,17 +29,17 @@ UDP server udp_server.out
 
     cd ~/erinnern
     source secret.bashrc
-    ssh rm -fv udp_server.c sock.c sock.h secret.h
-    scp udp_server.c sock.c sock.h secret.h
+    ssh rm -fv udp_server.c socket2.c socket2.h socks5.h secret.h
+    scp        udp_server.c socket2.c socket2.h socks5.h secret.h
     ssh
 <!-- -->
     tmux attach || tmux
 <!-- -->
-    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c sock.c && ./udp_server.out
+    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c socket2.c && ./udp_server.out
 
 UDP client erinnern
 
-    gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c sock.c && ./erinnern.out
+    gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c socket2.c socks5.c && ./erinnern.out
 
 <details><summary>UDP client nc</summary>
 

@@ -11,7 +11,8 @@
 #include <arpa/inet.h> // inet_aton()
 
 #include "./secret.h"
-#include "./sock.h"
+#include "./socket2.h"
+#include "./socks5.h"
 
 static struct sockaddr_in local_server_addr={};
 
@@ -29,62 +30,11 @@ static void lsa(){
   assert(local_server_addr.sin_addr.s_addr==htonl(INADDR_LOOPBACK)/*ip(7)*/);
 }
 
-static void buf_wrap(const char *const message){
-
-  assert(sendbuflen==0);
-  for(int i=0;i<SZ;++i)
-    assert(sendbuf[i]=='\0');
-
-  #define i sendbuflen
-
-  // RSV
-  assert(i==0);
-  sendbuf[i]=0x00;
-  sendbuf[i+1]=0x00;
-  i+=2;
-
-  // FRAG
-  // X'00' ... standalone
-  assert(i==2);
-  sendbuf[i]=0x00;
-  i+=1;
-
-  // ATYP
-  assert(i==3);
-  sendbuf[i]=0x01;
-  i+=1;
-
-  // DST.ADDR
-  // ATYP ... X'01' ... version-4 IP ... length of 4 octets (4 8-bit) (4 bytes) (32bit)
-  assert(i==4);
-  assert(1==inet_aton(IP,(struct in_addr*)&(sendbuf[i])));
-  static_assert(sizeof(struct in_addr)==4);
-  static_assert(sizeof(in_addr_t)==4);
-  static_assert(sizeof(uint32_t)==4);
-  i+=4;
-
-  // DST.PORT
-  // uint16_t htons(uint16_t hostshort);
-  assert(i==8);
-  *((uint16_t*)(&(sendbuf[i])))=htons(UDPORT);
-  static_assert(sizeof(uint16_t)==2);
-  i+=2;
-
-  // DATA
-  assert(i==10);
-  strcpy((char*)(&(sendbuf[i])),message);
-
-  i+=strlen(message);
-
-  #undef i
-
-}
-
-// Similar to sendto_direct() in udp_server.c
+// Only a tiny bit similar to sendto_direct() in udp_server.c
 static void sendto_socks5(const char *const message){  
   bzero(sendbuf,SZ);
   sendbuflen=0;
-  buf_wrap(message);
+  sendbuflen=socks5_udp_wrap(sendbuf,SZ,message,IP,UDPORT);
   assert((long long)sendbuflen==(long long)sendto(
     sockfd,
     sendbuf,
@@ -94,6 +44,27 @@ static void sendto_socks5(const char *const message){
     sizeof(local_server_addr)
   ));
   printf("sent: %s\n",message);
+}
+
+static void recvfrom_socks5(){
+
+  socklen_t addrlen=sizeof(struct sockaddr_in);
+  struct sockaddr_in t={};
+  unsigned char recvbuf[SZ]={};
+
+  const ssize_t r=recvfrom(sockfd,recvbuf,SZ,MSG_WAITALL,(struct sockaddr*)&t,&addrlen);
+  assert(1<=r&&r<=SZ-1);
+
+  assert(addrlen==sizeof(struct sockaddr_in));
+  assert(0==memcmp(&t,&local_server_addr,sizeof(struct sockaddr_in)));
+
+  assert(RSV(recvbuf)==0x0000);
+  assert(FRAG(recvbuf)==0);
+  assert(ATYP(recvbuf)==0x01);
+  assert((long long)r==(long long)strlen(DATA(recvbuf))+SOCKS5_UDP_REQ_HEADER_LEN);
+  printf("received: %s\n",DATA(recvbuf));
+  printf("from %s:%u\n",inet_ntoa(*DST_ADDR(recvbuf)),ntohs(DST_PORT(recvbuf)));
+
 }
 
 int main(){
@@ -109,9 +80,7 @@ int main(){
   sendto_socks5("\xce\xb1");
 
   // Beta
-  // struct sockaddr_in unk={};
-  // recvfrom2(&unk);
-  // printf("from %s:%u\n",inet_ntoa(unk.sin_addr),ntohs(unk.sin_port));
+  recvfrom_socks5();
 
   // Gamma
   // sendto_socks5("\xce\xb3");

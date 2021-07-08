@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "./sock.h"
+#include "./socket2.h"
 
 int sockfd=-1;
 
@@ -28,14 +28,4 @@ void bind2(const uint16_t hostshort){
     .sin_addr.s_addr=htonl(INADDR_ANY)
   })),sizeof(struct sockaddr_in)));
   getsockname2();
-}
-
-// Similar to ? in ?
-void recvfrom2(struct sockaddr_in *const sin){
-  unsigned char recvbuf[SZ]={};
-  socklen_t addrlen=sizeof(struct sockaddr_in);
-  const ssize_t r=recvfrom(sockfd,recvbuf,SZ,MSG_WAITALL,(struct sockaddr*)sin,&addrlen);
-  assert(1<=r&&r<=SZ-1);
-  assert(addrlen==sizeof(struct sockaddr_in));
-  printf("received: %s\n",recvbuf);
 }

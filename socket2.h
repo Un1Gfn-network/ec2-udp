@@ -11,5 +11,3 @@ extern int sockfd;
 // extern size_t sendbuflen;
 
 void bind2(const uint16_t hostshort);
-
-void recvfrom2(struct sockaddr_in *const);
