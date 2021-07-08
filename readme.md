@@ -35,7 +35,7 @@ UDP server udp_server.out
 <!-- -->
     tmux attach || tmux
 <!-- -->
-    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c socket2.c && ./udp_server.out
+    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c socket2.c && ./udp_server.out 7
 
 UDP client erinnern
 

@@ -9,16 +9,18 @@
 #include "./secret.h"
 #include "./socket2.h"
 
-struct sockaddr_in router_addr={};
+struct sockaddr_in router={};
 
 // Similar to recvfrom_socks5() in erinnern.c
-void recvfrom_direct(struct sockaddr_in *const sin){
+void recvfrom_direct(){
   unsigned char recvbuf[SZ]={};
   socklen_t addrlen=sizeof(struct sockaddr_in);
-  const ssize_t r=recvfrom(sockfd,recvbuf,SZ,MSG_WAITALL,(struct sockaddr*)sin,&addrlen);
+  const ssize_t r=recvfrom(sockfd,recvbuf,SZ,MSG_WAITALL,(struct sockaddr*)(&router),&addrlen);
   assert(1<=r&&r<=SZ-1);
   assert(addrlen==sizeof(struct sockaddr_in));
-  printf("received: %s\n",recvbuf);
+  // printf("received \"%s\"\n",recvbuf);
+  printf("received \"%s\" ",recvbuf);
+  printf("from %s:%u\n",inet_ntoa(router.sin_addr),ntohs(router.sin_port));
 }
 
 // Similar to sendto_socks5() in erinnern.c
@@ -29,30 +31,35 @@ static void sendto_direct(const char *const msg){
     msg,
     l,
     MSG_CONFIRM,
-    (const struct sockaddr*)(&router_addr),
+    (const struct sockaddr*)(&router),
     sizeof(struct sockaddr_in)
   ));
-  printf("sent: %s\n",msg);
+  printf("sent \"%s\"\n",msg);
 }
 
-int main(){
+int main(const int argc,const char **argv){
 
   bind2(UDPORT);
 
   // Alpha
-  recvfrom_direct(&router_addr);
-  printf("from %s:%u\n",inet_ntoa(router_addr.sin_addr),ntohs(router_addr.sin_port));
-
+  recvfrom_direct();
+  
   // Beta
   sendto_direct("\xce\xb2");
 
   // Gamma
-  // recvfrom_direct();
+  recvfrom_direct();
 
-  // sleep(1);
+  unsigned int sec=0;
+  assert(argc==2);
+  assert(1==sscanf(argv[1],"%u",&sec));
+  assert(1<=sec&&sec<=90);
+  printf("sleeping for %u seconds ...",sec);fflush(stdout);
+  sleep(sec);
+  puts("");
 
   // Delta (fail)
-  // sendto_direct("\xce\xb4");
+  sendto_direct("\xce\xb4");
 
   close(sockfd);
 

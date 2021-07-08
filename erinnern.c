@@ -43,7 +43,7 @@ static void sendto_socks5(const char *const message){
     (const struct sockaddr*)(&local_server_addr),
     sizeof(local_server_addr)
   ));
-  printf("sent: %s\n",message);
+  printf("sent wrapped \"%s\"\n",message);
 }
 
 static void recvfrom_socks5(){
@@ -62,7 +62,8 @@ static void recvfrom_socks5(){
   assert(FRAG(recvbuf)==0);
   assert(ATYP(recvbuf)==0x01);
   assert((long long)r==(long long)strlen(DATA(recvbuf))+SOCKS5_UDP_REQ_HEADER_LEN);
-  printf("received: %s\n",DATA(recvbuf));
+  // printf("received \"%s\"\n",DATA(recvbuf));
+  printf("received wrapped \"%s\" ",DATA(recvbuf));
   printf("from %s:%u\n",inet_ntoa(*DST_ADDR(recvbuf)),ntohs(DST_PORT(recvbuf)));
 
 }
@@ -83,10 +84,10 @@ int main(){
   recvfrom_socks5();
 
   // Gamma
-  // sendto_socks5("\xce\xb3");
+  sendto_socks5("\xce\xb3");
 
   // Delta (fail)
-  // recvfrom2();
+  recvfrom_socks5();
 
   close(sockfd);
 
