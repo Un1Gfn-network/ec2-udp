@@ -1,4 +1,13 @@
-## [erinnern](https://github.com/Un1Gfn-network/erinnern)
+# [erinnern](https://github.com/Un1Gfn-network/erinnern)
+
+## Misc
+
+[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
+
+    # openssl-rsautl(1ssl)
+    echo "<IP_ADDRESS>" \
+      | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
+      | base64 -w0
 
 random [repo name](https://www.bestrandoms.com/random-german-words)
 
@@ -13,7 +22,25 @@ SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/16
     source ~/erinnern/secret.bashrc
     ssh
 
-<details><summary>UDP server nc</summary>
+## UDP
+
+udp_server.out
+
+    cd ~/erinnern
+    source secret.bashrc
+    ssh rm -fv udp_server.c socket2.c socket2.h socks5.h secret.h
+    scp        udp_server.c socket2.c socket2.h socks5.h secret.h
+    ssh
+<!-- -->
+    tmux attach || tmux
+<!-- -->
+    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c socket2.c && ./udp_server.out
+
+udp_client_proxy.out
+
+    cd ~/erinnern && gcc -std=gnu11 -Wall -Wextra -o udp_client_proxy.out udp_client_proxy.c socket2.c socks5.c && ./udp_client_proxy.out
+
+<details><summary><del>nc server</del></summary>
 
     source ~/erinnern/secret.bashrc
     ssh
@@ -25,23 +52,7 @@ SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/16
 
 </details>
 
-UDP server udp_server.out
-
-    cd ~/erinnern
-    source secret.bashrc
-    ssh rm -fv udp_server.c socket2.c socket2.h socks5.h secret.h
-    scp        udp_server.c socket2.c socket2.h socks5.h secret.h
-    ssh
-<!-- -->
-    tmux attach || tmux
-<!-- -->
-    gcc -std=gnu11 -Wall -Wextra -o udp_server.out udp_server.c socket2.c && ./udp_server.out 7
-
-UDP client erinnern
-
-    gcc -std=gnu11 -Wall -Wextra -o erinnern.out erinnern.c socket2.c socks5.c && ./erinnern.out
-
-<details><summary>UDP client nc</summary>
+<details><summary><del>nc client</del></summary>
 
     source ~/erinnern/secret.bashrc
     pacman -Qo /usr/bin/nc
@@ -49,6 +60,8 @@ UDP client erinnern
     # nc -4 -N -n -u -v -X 5 -x 127.0.0.1:1080 "$IP" $UDPORT # nc: no proxy support for UDP mode
 
 </details>
+
+## TCP
 
 TCP server nc
 
@@ -68,16 +81,6 @@ TCP client ??
 | udp|client_win |[cm](https://github.com/Un1Gfn-network/cm-exp02/blob/master/client_win.c)|
 | udp|server_win |[ntexec](https://github.com/Un1Gfn-nt/ntexec/blob/master/win_server.c)|
 | udp|**client_unix**|[ntexec](https://github.com/Un1Gfn-nt/ntexec/blob/master/ntexec.c)|
-
-<!-- ||||| -->
-
-<details><summary>&nbsp;</summary>
-
-[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
-
-    # openssl-rsautl(1ssl)
-    echo "<IP_ADDRESS>" \
-      | openssl rsautl -inkey <(ssh-keygen -f ~/.ssh/id_rsa.pub -e -m PKCS8) -pubin -encrypt -ssl \
-      | base64 -w0
-
-</details>
+<!--
+|||||
+-->

@@ -37,7 +37,10 @@ static void sendto_direct(const char *const msg){
   printf("sent \"%s\"\n",msg);
 }
 
-int main(const int argc,const char **argv){
+int main(const int argc,const char *const *const argv){
+
+  assert(argc==1);
+  assert(argv[1]==NULL);
 
   bind2(UDPORT);
 
@@ -50,16 +53,16 @@ int main(const int argc,const char **argv){
   // Gamma
   recvfrom_direct();
 
-  unsigned int sec=0;
-  assert(argc==2);
-  assert(1==sscanf(argv[1],"%u",&sec));
-  assert(1<=sec&&sec<=90);
-  printf("sleeping for %u seconds ...",sec);fflush(stdout);
-  sleep(sec);
-  puts("");
-
-  // Delta (fail)
-  sendto_direct("\xce\xb4");
+  // Delta (loop)
+  for(unsigned int u=1;;u*=2){
+    printf("sleeping for %u seconds ...",u);fflush(stdout);
+    sleep(u);
+    puts("");
+    char s[SZ]={};
+    sprintf(s,"%s%u","\xce\xb4",u);
+    sendto_direct(s);
+    // puts(s);
+  }
 
   close(sockfd);
 

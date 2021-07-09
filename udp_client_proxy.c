@@ -68,7 +68,10 @@ static void recvfrom_socks5(){
 
 }
 
-int main(){
+int main(const int argc,const char *const *const argv){
+
+  assert(argc==1);
+  assert(argv[1]==NULL);
 
   // 0 is ephemeral
   // https://stackoverflow.com/q/1075399#comment12066805_1077305
@@ -86,8 +89,9 @@ int main(){
   // Gamma
   sendto_socks5("\xce\xb3");
 
-  // Delta (fail)
-  recvfrom_socks5();
+  // Delta (loop)
+  for(;;)
+    recvfrom_socks5();
 
   close(sockfd);
 
