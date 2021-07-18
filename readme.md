@@ -22,14 +22,20 @@ SOCKS5 ProxyCommand for ssh (nc from [openbsd-netcat](https://superuser.com/q/16
     source ~/erinnern/secret.bashrc
     ssh
 
+tcpdump
+
+    sudo tcpdump -i eth0 "udp"
+
 ## UDP
 
-udp_server.out
+sync source code
 
     cd ~/erinnern
     source secret.bashrc
-    ssh rm -fv udp_server.c socket2.c socket2.h socks5.h secret.h
-    scp        udp_server.c socket2.c socket2.h socks5.h secret.h
+    inotifywait -m -q -e close_write --format "%w" udp_server.c socket2.c socket2.h socks5.h secret.h | xargs -d '\n' -I{} -t bash -c 'scp "$@"' GARBAGE {}
+
+udp_server.out
+
     ssh
 <!-- -->
     tmux attach || tmux
