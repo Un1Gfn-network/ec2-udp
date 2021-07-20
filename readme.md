@@ -27,6 +27,14 @@ tcpdump
 
     sudo tcpdump -i eth0 "udp"
 
+[The Lost Art of Structure Packing](http://www.catb.org/esr/structure-packing) \
+&bullet; struct itself has the pointer alignment of its widest member \
+&bullet; stride address
+
+Manually construct UDP packet \
+&bullet; https://squidarth.com/networking/systems/rc/2018/05/28/using-raw-sockets.html \
+&bullet; https://www.binarytides.com/raw-udp-sockets-c-linux/
+
 ## UDP
 
 sync source code
