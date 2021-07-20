@@ -33,8 +33,7 @@ static void lsa(){
 // Only a tiny bit similar to sendto_direct() in udp_server.c
 static void sendto_socks5(const char *const message){  
   bzero(sendbuf,SZ);
-  sendbuflen=0;
-  sendbuflen=socks5_udp_wrap(sendbuf,SZ,message,IP,UDPORT);
+  sendbuflen=socksudphdr_write((struct socks5udphdr *)sendbuf,IP,UDPORT,message);
   assert((long long)sendbuflen==(long long)sendto(
     sockfd,
     sendbuf,
@@ -48,23 +47,26 @@ static void sendto_socks5(const char *const message){
 
 static void recvfrom_socks5(){
 
-  socklen_t addrlen=sizeof(struct sockaddr_in);
   struct sockaddr_in t={};
   unsigned char recvbuf[SZ]={};
 
-  const ssize_t r=recvfrom(sockfd,recvbuf,SZ,MSG_WAITALL,(struct sockaddr*)&t,&addrlen);
-  assert(1<=r&&r<=SZ-1);
+  const ssize_t r=recvfrom(
+    sockfd,
+    recvbuf,
+    SZ,
+    MSG_WAITALL,
+    (struct sockaddr*)&t,
+    &((socklen_t){sizeof(struct sockaddr_in)}));
 
-  assert(addrlen==sizeof(struct sockaddr_in));
+  assert(1<=r&&r<=SZ-1);
   assert(0==memcmp(&t,&local_server_addr,sizeof(struct sockaddr_in)));
 
-  assert(RSV(recvbuf)==0x0000);
-  assert(FRAG(recvbuf)==0);
-  assert(ATYP(recvbuf)==0x01);
-  assert((long long)r==(long long)strlen(DATA(recvbuf))+SOCKS5_UDP_REQ_HEADER_LEN);
-  // printf("received \"%s\"\n",DATA(recvbuf));
-  printf("received wrapped \"%s\" ",DATA(recvbuf));
-  printf("from %s:%u\n",inet_ntoa(*DST_ADDR(recvbuf)),ntohs(DST_PORT(recvbuf)));
+  const struct socks5udphdr *const h=(const struct socks5udphdr*)recvbuf;
+  socksudphdr_verify(h);
+  assert((size_t)r==sizeof(struct socks5udphdr)+strlen(h->data)); // Already assured a positive r, safe to cast to unsigned
+
+  printf("received wrapped \"%s\" ",h->data);
+  printf("from %s:%u\n",inet_ntoa(h->dst_addr),ntohs(h->dst_port));
 
 }
 

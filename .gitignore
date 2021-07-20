@@ -1,3 +1,5 @@
 /secret.bashrc
 /secret.h
+
+/*.o
 *.out

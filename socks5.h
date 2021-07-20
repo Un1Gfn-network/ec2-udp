@@ -7,14 +7,16 @@
 
 static_assert(4==sizeof(struct in_addr));
 
-// UDP request header fields
-// https://datatracker.ietf.org/doc/html/rfc1928#section-7
-#define RSV(A)          (*((uint16_t*)((uint8_t*)(A))))          // assert(RSV(A)==0x0000);
-#define FRAG(A)                     (*((uint8_t*)(A)+2))         // assert(FRAG(A)==0);
-#define ATYP(A)                     (*((uint8_t*)(A)+2+1))       // assert(ATYP(A)==0x01);
-#define DST_ADDR(A) ((struct in_addr*)((uint8_t*)(A)+2+1+1))     // inet_ntoa(*DST_ADDR(A)); // assert(1==inet_aton(s,DST_ADDR(A)));
-#define DST_PORT(A)     (*((uint16_t*)((uint8_t*)(A)+2+1+1+4)))  // ntohs(DST_PORT(A));
-#define DATA(A)                         (((char*)(A)+2+1+1+4+2)) // puts(DST_DATA(A));
-#define SOCKS5_UDP_REQ_HEADER_LEN (2+1+1+4+2)
-
-size_t socks5_udp_wrap(char *const,const size_t,const char *const,const char *const,const uint16_t);
+// http://c-faq.com/struct/align.esr.html
+// As a very drastic measure, you can declare all members as bit-fields
+struct socks5udphdr{
+  uint16_t rsv;            // 2-byte
+  uint8_t frag;            // 1-byte
+  uint8_t atyp;            // 1-byte
+  struct in_addr dst_addr; // 4-byte
+  uint16_t dst_port;       // 2-byte
+  char data[];             // https://en.wikipedia.org/wiki/Flexible_array_member
+} __attribute__((__packed__));
+static_assert(2+1+1+4+2==sizeof(struct socks5udphdr));
+size_t socksudphdr_write(struct socks5udphdr *const, const char *const, const uint16_t, const char *const);
+void socksudphdr_verify(const struct socks5udphdr *const);

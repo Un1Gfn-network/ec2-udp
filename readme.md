@@ -11,7 +11,8 @@
 
 random [repo name](https://www.bestrandoms.com/random-german-words)
 
-rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/html/rfc1928#section-7)
+rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/html/rfc1928#section-7) \
+comments in ss-libev [udprelay.c](https://github.com/shadowsocks/shadowsocks-libev/blob/e04b73d1b6ad04d047d0c81ac1291bc281429ba1/src/udprelay.c#L1020)
 
 [SOCKS](https://en.wikipedia.org/wiki/SOCKS) on Wikipedia
 
@@ -31,11 +32,13 @@ tcpdump
 sync source code
 
     cd ~/erinnern
-    source secret.bashrc
+    source erinnern.bashrc
     inotifywait -m -q -e close_write --format "%w" udp_server.c socket2.c socket2.h socks5.h secret.h | xargs -d '\n' -I{} -t bash -c 'scp "$@"' GARBAGE {}
 
 udp_server.out
 
+    cd ~/erinnern
+    source erinnern.bashrc
     ssh
 <!-- -->
     tmux attach || tmux

@@ -7,8 +7,50 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stddef.h> // offsetof()
 
-static inline void bitfield(){
+static void test_packed(){
+
+  // https://stackoverflow.com/a/119134
+
+  typedef struct {
+    uint8_t a;
+    uint16_t b;
+    uint8_t c;
+  } X;
+
+  typedef struct {
+    uint8_t a;
+    uint32_t b;
+    uint8_t c;
+  } Y;
+
+  typedef struct {
+    uint8_t a;
+    uint64_t b;
+    uint8_t c;
+  } Z;
+
+  typedef struct {
+    uint8_t a;
+    uint64_t b;
+    uint8_t c;
+  } __attribute__((__packed__)) P;
+
+  // printf("%s %zu %zu %zu\n",
+  //   "Z",
+  //   offsetof(Z,b),
+  //   offsetof(Z,c),
+  //   sizeof(Z));
+
+  static_assert((16+16+16)/8==sizeof(X));
+  static_assert((32+32+32)/8==sizeof(Y));
+  static_assert((64+64+64)/8==sizeof(Z));
+  static_assert(( 8+64+ 8)/8==sizeof(P));
+
+}
+
+static void test_bitfield(){
 
   /*
   https://en.wikipedia.org/wiki/IPv4#Header
@@ -69,6 +111,7 @@ static inline void bitfield(){
 }
 
 int main(){
-  bitfield();
+  // test_bitfield();
+  test_packed();
   return 0;
 }

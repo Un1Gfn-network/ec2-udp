@@ -1,27 +1,39 @@
 #include <assert.h>
+#include <stdalign.h> // alignof()
+#include <stddef.h>
 #include <string.h>
 
 #include <arpa/inet.h> // inet_aton
 
 #include "./socks5.h"
 
-size_t socks5_udp_wrap(char *const dest,const size_t maxlen,const char *const s,const char *const ip,const uint16_t port){
+size_t socksudphdr_write(struct socks5udphdr *const h, const char *const ip, const uint16_t port, const char *const data){
 
-  assert(dest[0]=='\0');
-  assert(maxlen>=1);
-  assert(0==memcmp(dest,dest+1,maxlen-1));
+  h->rsv=0x0000;
+  h->frag=0;
+  h->atyp=0x01;
 
-  RSV(dest)=0x0000;
-  FRAG(dest)=0;
-  ATYP(dest)=0x01;
-  assert(1==inet_aton(ip,DST_ADDR(dest)));
-  DST_PORT(dest)=htons(port);
+  // https://stackoverflow.com/q/8568432/is-gccs-attribute-packed-pragma-pack-unsafe
+  // https://en.wikipedia.org/wiki/Bus_error#Unaligned_access
+  #ifdef __x86_64__
+    static_assert(offsetof(struct socks5udphdr,dst_addr)%alignof(struct in_addr)==0);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+    assert(1==inet_aton(ip,&(h->dst_addr)));
+    #pragma GCC diagnostic pop
+  #else
+    #error ""
+  #endif
 
-  // Safety
-  const size_t l=strnlen(s,maxlen); // excluding the terminating null byte
-  const size_t r=SOCKS5_UDP_REQ_HEADER_LEN+l+1;
-  assert( 1<=l && l<=r && r<=maxlen );
-  strcpy(DATA(dest),s);
-  return r;
+  h->dst_port=htons(port);
+  strcpy(h->data,data);
 
+  return (sizeof(struct socks5udphdr)+strlen(data));
+
+}
+
+void socksudphdr_verify(const struct socks5udphdr *const h){
+  assert(0x0000==h->rsv);
+  assert(0==h->frag);
+  assert(0x01==h->atyp);
 }
