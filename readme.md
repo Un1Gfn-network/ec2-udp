@@ -2,7 +2,7 @@
 
 ## Misc
 
-[encrypt](https://superuser.com/a/576558) text with ssh-rsa public key
+[encrypt] text with ssh-rsa public key
 
     # openssl-rsautl(1ssl)
     echo "<IP_ADDRESS>" \
@@ -11,8 +11,8 @@
 
 random [repo name](https://www.bestrandoms.com/random-german-words)
 
-rfc1928 - 7. [Procedure for UDP-based clients](https://datatracker.ietf.org/doc/html/rfc1928#section-7) \
-comments in ss-libev [udprelay.c](https://github.com/shadowsocks/shadowsocks-libev/blob/e04b73d1b6ad04d047d0c81ac1291bc281429ba1/src/udprelay.c#L1020)
+rfc1928 - 7. [Procedure for UDP-based clients][rfc1928] \
+comments in ss-libev [udprelay.c]
 
 [SOCKS](https://en.wikipedia.org/wiki/SOCKS) on Wikipedia
 
@@ -101,3 +101,7 @@ TCP client ??
 <!--
 |||||
 -->
+
+[encrypt]:https://superuser.com/a/576558
+[rfc1928]:https://datatracker.ietf.org/doc/html/rfc1928#section-7
+[udprelay.c]:https://github.com/shadowsocks/shadowsocks-libev/blob/e04b73d1b6ad04d047d0c81ac1291bc281429ba1/src/udprelay.c#L1020
